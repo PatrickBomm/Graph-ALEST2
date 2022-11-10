@@ -1,11 +1,14 @@
 # -*- coding: UTF-8 -*-
-from graphviz import Digraph    
+from graphviz import Digraph
+from tkinter import *
+import webbrowser
 
 
 class Grafo:
+    
     counter3path = 0
     counter2path = 0
-    
+
     def __init__(self):
         self.__nodos = []
         self.__matriz = []
@@ -33,10 +36,13 @@ class Grafo:
 
     # Show the values ​​(or information) of the nodes in the graph
     def showNodes(self):
+        aux = ""
         i = 0
         for nodo in self.__nodos:
-            print (i, nodo)
+            print(i, nodo)
             i = i + 1
+            aux = aux + nodo + "\n"
+        return aux
 
     # Show weight and destination node of the arcs (or edges) of a node, given its value
     def showArc(self, value):
@@ -100,18 +106,18 @@ class Grafo:
             for endValue2 in self.__matriz[nextStart2]:
                 counter3path = counter3path + 1
         return True
-    
+
     def caminhosAte2Iteracoes(self, nodo):
         global counter2path
         nextStart = self.searchNode(nodo)
-        
+
         if (nextStart < 0):
             return False
-        
+
         for endValue in self.__matriz[nextStart]:
             counter2path = counter2path + 1
         return True
-        
+
     # Remove all the loops/links to the same graph
     def removeLoops(self):
         nextStart = 0
@@ -126,17 +132,18 @@ class Grafo:
     # Shows the stored adjacency matrix of the graph
 
     def showStructure(self):
-        print (self.__nodos)
-        print (self.__matriz)
-        
-        
+        print(self.__nodos)
+        print(self.__matriz)
+
     # Dot
+
     def showDot(self):
-        dot = Digraph( format="png")
-        styleNoeuds = {'fontname':'Arial', 'shape':'ellipse', 'color': '#000000', 'style': 'filled', 'fillcolor':'#ffffff'}
+        dot = Digraph(format="png")
+        styleNoeuds = {'fontname': 'Arial', 'shape': 'ellipse',
+                       'color': '#000000', 'style': 'filled', 'fillcolor': '#ffffff'}
         dot.node_attr.update(styleNoeuds)
         dot.attr(rankdir="LR", size="8,5")
-        
+
         for nodo in self.__nodos:
             nextStart = self.searchNode(nodo)
             if (nextStart < 0):
@@ -145,35 +152,33 @@ class Grafo:
             for endValue in self.__matriz[nextStart]:
                 dot.edge(nodo, endValue)
 
-        dot.view("assets/grafo.dot", cleanup=True)     
-
+        dot.view("assets/grafo.dot", cleanup=True)
 
     def path3(self):
         global counter3path
         counter3path = 0
         for nodo in self.__nodos:
-            self.caminhosAte3Iteracoes(nodo)            
-        
-        return(counter3path)
-    
+            self.caminhosAte3Iteracoes(nodo)
+
+        return (counter3path)
+
     def path2(self):
         global counter2path
         counter2path = 0
         for nodo in self.__nodos:
             self.caminhosAte2Iteracoes(nodo)
-        
-        return(counter2path)
 
+        return (counter2path)
 
 
 def readTxt():
     file = open("assets/test.txt", "r")
     lines = file.readlines()
     file.close()
-    
+
     grafo = Grafo()
 
-    for line in lines:  
+    for line in lines:
         if line == " " or line == "\n":
             break
         line = line.strip()
@@ -184,15 +189,70 @@ def readTxt():
     return grafo
 
 # MAIN
-
 g = readTxt()
-print ("Nodos:\n")
+
+print("Nodos:\n")
 g.showNodes()
+path3 = g.path3()
+path2 = g.path2()
+print("Number of variations up to 3 flavors: ", path3)
 
-print ("Number of variations up to 3 flavors: ", g.path3())
+print("Number of variations up to 2 flavors: ", path2)
 
-print("Number of variations up to 2 flavors: ", g.path2())
+
 try:
     g.showDot()
 except:
     print(" ")
+
+class Application(Frame):
+
+    global path3, path2
+
+    def __init__(self, master=None):
+        self.fontePadrao = ("Arial", "10")
+        self.primeiroContainer = Frame(master)
+        self.primeiroContainer["pady"] = 10
+        self.primeiroContainer.pack()
+
+        self.segundoContainer = Frame(master)
+        self.segundoContainer["padx"] = 20
+        self.segundoContainer.pack()
+
+        self.terceiroContainer = Frame(master)
+        self.terceiroContainer["padx"] = 20
+        self.terceiroContainer.pack()
+        
+        self.quartoContainer = Frame(master)
+        self.quartoContainer["pady"] = 20
+        self.quartoContainer.pack()
+        
+        self.quintoContainer = Frame(master)
+        self.quintoContainer["pady"] = 20
+        self.quintoContainer.pack()
+
+        self.titulo = Label(self.primeiroContainer, text="Graph")
+        self.titulo["font"] = ("Arial", "10", "bold")
+        self.titulo.pack()
+
+        texto = "Number of variations up to 3 flavors: " + str(path3)
+
+        self.path3 = Label(self.terceiroContainer,
+                           text=texto, font=self.fontePadrao)
+        self.path3.pack(side=LEFT)
+
+        texto2 = "Number of variations up to 2 flavors: " + str(path2)
+
+        self.path2 = Label(self.segundoContainer,
+                           text=texto2, font=self.fontePadrao)
+        self.path2.pack(side=LEFT)
+        
+        self.openSite = Button(self.quintoContainer, text="Site to see the Graph", font=self.fontePadrao, command=self.openSite)
+        self.openSite.pack(side=RIGHT)
+    def openSite(self):
+        webbrowser.open("https://dreampuf.github.io/GraphvizOnline/#")
+       
+
+root = Tk()
+Application(root)
+root.mainloop()
