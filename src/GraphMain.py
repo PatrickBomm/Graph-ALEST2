@@ -5,7 +5,8 @@ import webbrowser
 
 
 class Grafo:
-    
+    list = []
+    list2 = []
     counter3path = 0
     counter2path = 0
 
@@ -44,58 +45,8 @@ class Grafo:
             aux = aux + nodo + "\n"
         return aux
 
-    # Show weight and destination node of the arcs (or edges) of a node, given its value
-    def showArc(self, value):
-        nextStart = self.searchNode(value)
-        if (nextStart < 0):
-            return False
-
-        for endValue in self.__matriz[nextStart]:
-            print(value, " -> ", endValue)
-        return True
-
-    # Indicates if there is an arc (or edge) from a source node to a destination node
-    def existArc(self, startValue, endValue):
-        nextStart = self.searchNode(startValue)
-        nextEnd = self.searchNode(endValue)
-        if (nextStart >= 0 and nextEnd >= 0):
-            if (endValue in self.__matriz[nextStart]):
-                return True
-        return False
-
-    # Remove a node from the graph
-    def removeNode(self, startValue):
-        nextStart = self.searchNode(startValue)
-        del self.__nodos[nextStart]
-        del self.__matriz[nextStart]
-
-        for arcos in self.__matriz:
-            if (startValue in arcos):
-                del arcos[startValue]
-
-    # Indicates if there are island nodes in a graph
-    # Validate island node with link to itself
-    def existIsland(self):
-        pos = 0
-        for arcos in self.__matriz:
-            if (len(arcos) == 0):
-                endValue = self.__nodos[pos]
-
-                esIsla = True
-                posNodo = 0
-                for valNodo in self.__nodos:
-                    if (endValue in self.__matriz[posNodo]):
-                        esIsla = False
-                    posNodo = posNodo + 1
-
-                if (esIsla == True) or (self.existArc(valNodo, valNodo)):
-                    return True
-
-            pos = pos + 1
-        return False
-
-    # verifica quantas variacoes de caminhos de no maximo 3 passos existem e retorna o numero de caminhos
-    def caminhosAte3Iteracoes(self, nodo):
+    # checks how many variations of paths of at most 3 steps there are and returns the number of paths
+    def pathUpto3Interactions(self, nodo):
         global counter3path
         nextStart = self.searchNode(nodo)
         if (nextStart < 0):
@@ -107,8 +58,13 @@ class Grafo:
                 counter3path = counter3path + 1
         return True
 
-    def caminhosAte2Iteracoes(self, nodo):
+    # checks how many variations of paths of at most 2 steps there are and returns the number of paths
+    def pathUpto2Interactions(self, nodo):
         global counter2path
+        global list
+        global list2
+        
+        
         nextStart = self.searchNode(nodo)
 
         if (nextStart < 0):
@@ -116,24 +72,30 @@ class Grafo:
 
         for endValue in self.__matriz[nextStart]:
             counter2path = counter2path + 1
+            next = self.searchNode(endValue)
+            list2.append(endValue)
+            for endValue2 in self.__matriz[next]:
+                for j in list2:
+                    if (j == endValue2):
+                        return
+                    boolean = False
+
+                    if len(list) > 0:
+                        for i in list:
+                            if (i == endValue2):
+                                boolean = True
+                                return    
+                        if (boolean == False):
+                            counter2path = counter2path + 1
+                            list.append(endValue2)
+                            break
+                                
+                    else:
+                        counter2path = counter2path + 1
+                        list.append(endValue2)
+        
         return True
 
-    # Remove all the loops/links to the same graph
-    def removeLoops(self):
-        nextStart = 0
-        for startValue in self.__nodos:
-            for endValue in self.__matriz[nextStart]:
-                if (startValue == endValue):
-                    del self.__matriz[nextStart][endValue]
-                    break
-
-            nextStart = nextStart + 1
-
-    # Shows the stored adjacency matrix of the graph
-
-    def showStructure(self):
-        print(self.__nodos)
-        print(self.__matriz)
 
     # Dot
 
@@ -154,21 +116,35 @@ class Grafo:
 
         dot.view("assets/grafo.dot", cleanup=True)
 
-    def path3(self):
+    def path3flavors(self):
         global counter3path
         counter3path = 0
         for nodo in self.__nodos:
-            self.caminhosAte3Iteracoes(nodo)
+            self.pathUpto3Interactions(nodo)
 
         return (counter3path)
 
-    def path2(self):
-        global counter2path
+    def path2flavors(self):
+        global counter2path, list, list2
+        list = []
+        list2 = []
         counter2path = 0
         for nodo in self.__nodos:
-            self.caminhosAte2Iteracoes(nodo)
-
+            self.pathUpto2Interactions(nodo)
+        print(list)
+        print(list2)
         return (counter2path)
+    
+    def showArcs(self):
+        aux = ""
+        for nodo in self.__nodos:
+            nextStart = self.searchNode(nodo)
+            if (nextStart < 0):
+                break
+
+            for endValue in self.__matriz[nextStart]:
+                aux = aux + nodo + " -> " + endValue + "\n"
+        return aux
 
 
 def readTxt():
@@ -191,13 +167,15 @@ def readTxt():
 # MAIN
 g = readTxt()
 
-print("Nodos:\n")
+print("\n\n\nNodos:\n")
 g.showNodes()
-path3 = g.path3()
-path2 = g.path2()
-print("Number of variations up to 3 flavors: ", path3)
+path3flavors = g.path3flavors()
+path2flavors = g.path2flavors()
+print("\n\n\n\nNumber of variations up to 2 flavors: ", path2flavors)
 
-print("Number of variations up to 2 flavors: ", path2)
+print("Number of variations up to 3 flavors: ", path3flavors)
+
+print("arestas: ", g.showArcs())
 
 
 try:
@@ -207,10 +185,11 @@ except:
 
 class Application(Frame):
 
-    global path3, path2
+    global path3flavors, path2flavors
 
     def __init__(self, master=None):
-        self.fontePadrao = ("Arial", "10")
+        self.fontePadrao = ("Roboto", "14")
+        self.fonteSecundaria = ("Arial", "12")
         self.primeiroContainer = Frame(master)
         self.primeiroContainer["pady"] = 10
         self.primeiroContainer.pack()
@@ -232,23 +211,26 @@ class Application(Frame):
         self.quintoContainer.pack()
 
         self.titulo = Label(self.primeiroContainer, text="Graph")
-        self.titulo["font"] = ("Arial", "10", "bold")
+        self.titulo["font"] = ("Roboto", "15", "bold")
         self.titulo.pack()
 
-        texto = "Number of variations up to 3 flavors: " + str(path3)
+        texto = "Number of variations up to 3 flavors: " + str(path3flavors)
 
-        self.path3 = Label(self.terceiroContainer,
+        self.path3flavors = Label(self.terceiroContainer,
                            text=texto, font=self.fontePadrao)
-        self.path3.pack(side=LEFT)
+        self.path3flavors.pack(side=LEFT)
 
-        texto2 = "Number of variations up to 2 flavors: " + str(path2)
+        texto2 = "Number of variations up to 2 flavors: " + str(path2flavors)
 
-        self.path2 = Label(self.segundoContainer,
+        self.path2flavors = Label(self.segundoContainer,
                            text=texto2, font=self.fontePadrao)
-        self.path2.pack(side=LEFT)
+        self.path2flavors.pack(side=LEFT)
         
         self.openSite = Button(self.quintoContainer, text="Site to see the Graph", font=self.fontePadrao, command=self.openSite)
         self.openSite.pack(side=RIGHT)
+        
+        self.text = Label(self.quartoContainer, text="Copy the text at 'grafo.dot' file to paste at site!", font=self.fonteSecundaria)
+        self.text.pack(side=LEFT)
     def openSite(self):
         webbrowser.open("https://dreampuf.github.io/GraphvizOnline/#")
        
