@@ -1,0 +1,25 @@
+// Graph
+digraph {
+	papaya_com_cassis -> "prestÃ­gio"
+	papaya_com_cassis -> milho_verde
+	"prestÃ­gio" -> chokito
+	milho_verde -> laranja
+	milho_verde -> nozes
+	laranja -> "prestÃ­gio"
+	laranja -> chokito
+	"abÃ³bora" -> acerola
+	ameixa -> chokito
+	"melÃ£o" -> graviola
+	cenoura -> tamarindo
+	tamarindo -> chokito
+	"pÃªssego" -> ameixa
+	"pÃªssego" -> acerola
+	ferrero -> "abÃ³bora"
+	passas_ao_rum -> pistache
+	pistache -> ameixa
+	pistache -> "prestÃ­gio"
+	"cupuaÃ§u" -> laranja
+	"cupuaÃ§u" -> tamarindo
+	"abacaxi_com_hortelÃ£" -> laranja
+	"abacaxi_com_hortelÃ£" -> "prestÃ­gio"
+}

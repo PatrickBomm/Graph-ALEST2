@@ -1,0 +1,5 @@
+morangoENata -> laranja
+morangoENata -> tamarindo
+tamarindo -> queijo
+tamarindo -> baunilha
+baunilha -> morangoENata
